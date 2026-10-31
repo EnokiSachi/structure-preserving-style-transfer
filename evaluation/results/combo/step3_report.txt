@@ -1,0 +1,8 @@
+# Step 3 报告：combo
+device=cuda  pools=[4, 16]  mode=combo
+lambda (auto, magnitude-matched) = 4.0265   [mean L_multi=0.535947, mean L_lap=0.133105 on 32 train pairs, pretrained decoder]
+combo objective: content + 10*style + [0.5*L_multi + 0.5*lambda*L_lap] (fixed a priori)
+seed 17: steps=500 final(content=1.7825, style=0.3922, struct=0.621874)  rows=320  33s
+seed 43: steps=500 final(content=1.8718, style=0.4123, struct=0.601734)  rows=320  37s
+seed 101: steps=500 final(content=1.6889, style=0.2211, struct=0.486165)  rows=320  38s
+total time: 125s

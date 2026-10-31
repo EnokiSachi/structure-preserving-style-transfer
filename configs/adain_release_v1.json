@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "size": 256,
+  "checkpoint": "outputs/adain_confirmation_v1/seed_17/multi_decoder.pt",
+  "seed": 17,
+  "selection": "Multiscale arm selected on validation evidence; first listed seed used for demo, not best-seed ranking.",
+  "strength": "feature interpolation; zero is decoder reconstruction, not pixel identity",
+  "runtime_files": {
+    ".cache/adain_qualified/net.py": "2932117288166139afd648a4db790d717c211a10328c8dc9df3380b958a41c17",
+    ".cache/adain_qualified/function.py": "aa8bf84efb80ba43724d075a2d237387ed8e8baed342b95b55a7a0d5f8aa09ea",
+    ".cache/adain_qualified/vgg_normalised.pth": "804ca2835ecf7539f0cd2a7ac3c18ce81e6f8468969ae7117ac0c148d286bb4a",
+    "outputs/adain_confirmation_v1/seed_17/multi_decoder.pt": "d9b69ce1b614dd23c0d963324aea707eb9689598781d7e7220dcab1511e2d9f4"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "seeds": [
+    17,
+    43,
+    101
+  ],
+  "smoke": false,
+  "data_root": "E:\\GAN_Project\\data_raw\\vangogh2photo_windows",
+  "root": "E:\\GAN_Project\\controllable-image-stylization",
+  "files": {
+    "run_adain_confirm_worker.py": "fe4d1be20131c92f1774164bed9d9677afdebdd2f6da58d586704f72c4d1ecee",
+    "adain_structure_research.py": "d983b0412a42cac21d19d5f0cf5fc5a687a27338e2f44e2e3c5eecb2dac47dca",
+    "summarize_adain_confirmation.py": "57bb42a98d3834ce70081a5601495d8a57402605996013e032e38f1eb0b132a7"
+  },
+  "manifest": "8393234c1e0914c3e96b86eb71233eb3791ff0d514b256f0f7c21baeddf771bf",
+  "assets": "b369db6ae02354c32e3063f971beb477b2442988c9fae2d375f5b26dd112bf2c"
+}

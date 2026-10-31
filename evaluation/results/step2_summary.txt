@@ -1,0 +1,181 @@
+# Step 2 报告：风格误差匹配后的比较
+seeds=[17, 43, 101]  arms=['combo', 'laplacian', 'multi', 'none', 'pretrained', 'single']  metrics=['multi_structure', 'single_structure', 'content_feature', 'pixel_l1', 'pooled_intensity_l1', 'ssim_luma', 'edge_f1', 'lpips_content']
+独立于训练目标的指标：ssim_luma(↑) edge_f1(↑) lpips_content(↓)；pixel_l1 / pooled_intensity_l1 也未进入训练但对合理的颜色变化敏感。
+
+======================================================================
+## A. 原四个条件（复现原协议）
+======================================================================
+coverage (seed, accepted, possible): (17,190,192), (43,192,192), (101,192,192)
+
+### 匹配后均值（三种子均值 ± 种子间 SD）
+                            pretrained               none             single              multi
+multi_structure      0.428099±0.001052  0.418970±0.002664  0.415336±0.002460  0.404124±0.002053
+single_structure     0.688465±0.000734  0.687166±0.003096  0.685027±0.003060  0.683286±0.002989
+content_feature      1.329837±0.021666  1.306300±0.011819  1.305269±0.011688  1.300234±0.011435
+pixel_l1             0.151612±0.001817  0.150663±0.001890  0.150527±0.001978  0.149503±0.002057
+pooled_intensity_l1  0.108495±0.002081  0.107628±0.002170  0.107574±0.002253  0.106693±0.002228
+ssim_luma            0.308309±0.001894  0.310184±0.003279  0.312111±0.003104  0.314189±0.002694
+edge_f1              0.663675±0.001217  0.668559±0.002132  0.668967±0.001950  0.670707±0.001901
+lpips_content        0.424367±0.004662  0.416802±0.000775  0.416573±0.000514  0.415660±0.000293
+
+### 与论文数字对照（应基本一致）
+pretrained multi_structure: paper=0.428099  now=0.428099  diff=+0.000000
+none       multi_structure: paper=0.418970  now=0.418970  diff=+0.000000
+single     multi_structure: paper=0.415336  now=0.415336  diff=+0.000000
+multi      multi_structure: paper=0.404124  now=0.404124  diff=-0.000000
+
+### 两两比较（diff = a − b；CI 为交叉 bootstrap；contents/styles = a 更优的内容数/参考数；sign_p 为 16 个内容层面的符号检验）
+        comparison              metric  mean_a  mean_b rel_change          95%CI(diff) better CI_excl_0 contents styles  sign_p
+     multi vs none     multi_structure 0.40412 0.41897     -3.55% [-0.01670, -0.01311]      a       yes    16/16    4/4 3.1e-05
+     multi vs none    single_structure 0.68329 0.68717     -0.57% [-0.00506, -0.00294]      a       yes    16/16    4/4 3.1e-05
+     multi vs none     content_feature 1.30028 1.30635     -0.46% [-0.00923, -0.00251]      a       yes    14/16    4/4  0.0042
+     multi vs none            pixel_l1 0.14950 0.15066     -0.77% [-0.00172, -0.00063]      a       yes    14/16    4/4  0.0042
+     multi vs none pooled_intensity_l1 0.10669 0.10762     -0.87% [-0.00194, -0.00006]      a       yes    10/16    4/4    0.45
+     multi vs none           ssim_luma 0.31419 0.31019     +1.29% [+0.00292, +0.00523]      a       yes    16/16    4/4 3.1e-05
+     multi vs none             edge_f1 0.67070 0.66856     +0.32% [+0.00080, +0.00390]      a       yes    14/16    4/4  0.0042
+     multi vs none       lpips_content 0.41566 0.41680     -0.27% [-0.00194, -0.00039]      a       yes    14/16    4/4  0.0042
+   multi vs single     multi_structure 0.40412 0.41533     -2.70% [-0.01261, -0.00988]      a       yes    16/16    4/4 3.1e-05
+   multi vs single    single_structure 0.68329 0.68503     -0.25% [-0.00244, -0.00112]      a       yes    16/16    4/4 3.1e-05
+   multi vs single     content_feature 1.30028 1.30532     -0.39% [-0.00726, -0.00258]      a       yes    14/16    4/4  0.0042
+   multi vs single            pixel_l1 0.14950 0.15052     -0.68% [-0.00149, -0.00057]      a       yes    14/16    4/4  0.0042
+   multi vs single pooled_intensity_l1 0.10669 0.10757     -0.82% [-0.00166, -0.00017]      a       yes    11/16    4/4    0.21
+   multi vs single           ssim_luma 0.31419 0.31211     +0.67% [+0.00135, +0.00287]      a       yes    15/16    4/4 0.00052
+   multi vs single             edge_f1 0.67070 0.66896     +0.26% [+0.00063, +0.00327]      a       yes    14/16    4/4  0.0042
+   multi vs single       lpips_content 0.41566 0.41657     -0.22% [-0.00156, -0.00027]      a       yes    13/16    4/4   0.021
+    single vs none     multi_structure 0.41533 0.41897     -0.87% [-0.00415, -0.00316]      a       yes    16/16    4/4 3.1e-05
+    single vs none    single_structure 0.68503 0.68717     -0.31% [-0.00265, -0.00172]      a       yes    16/16    4/4 3.1e-05
+    single vs none     content_feature 1.30532 1.30635     -0.08% [-0.00222, +0.00032]      a        no    12/16    3/4   0.077
+    single vs none            pixel_l1 0.15052 0.15066     -0.09% [-0.00025, -0.00002]      a       yes    13/16    4/4   0.021
+    single vs none pooled_intensity_l1 0.10757 0.10762     -0.05% [-0.00028, +0.00013]      a        no     8/16    2/4       1
+    single vs none           ssim_luma 0.31211 0.31019     +0.62% [+0.00152, +0.00240]      a       yes    16/16    4/4 3.1e-05
+    single vs none             edge_f1 0.66896 0.66856     +0.06% [-0.00003, +0.00088]      a        no    11/16    4/4    0.21
+    single vs none       lpips_content 0.41657 0.41680     -0.06% [-0.00047, +0.00003]      a        no    12/16    4/4   0.077
+none vs pretrained     multi_structure 0.41897 0.42810     -2.14% [-0.01246, -0.00599]      a       yes    15/16    4/4 0.00052
+none vs pretrained    single_structure 0.68717 0.68847     -0.19% [-0.00441, +0.00194]      a        no    12/16    3/4   0.077
+none vs pretrained     content_feature 1.30635 1.32977     -1.76% [-0.04949, +0.00131]      a        no    15/16    4/4 0.00052
+none vs pretrained            pixel_l1 0.15066 0.15161     -0.63% [-0.00353, +0.00151]      a        no    11/16    2/4    0.21
+none vs pretrained pooled_intensity_l1 0.10762 0.10849     -0.81% [-0.00429, +0.00253]      a        no    12/16    2/4   0.077
+none vs pretrained           ssim_luma 0.31019 0.30831     +0.62% [-0.00406, +0.00801]      a        no    13/16    3/4   0.021
+none vs pretrained             edge_f1 0.66856 0.66368     +0.73% [+0.00131, +0.00950]      a       yes    13/16    4/4   0.021
+none vs pretrained       lpips_content 0.41680 0.42435     -1.79% [-0.01577, +0.00018]      a        no    14/16    4/4  0.0042
+
+### multi vs none 按匹配强度拆分
+                    comparison          metric  mean_a  mean_b rel_change          95%CI(diff) better CI_excl_0 contents styles  sign_p
+multi vs none @none_alpha=0.25 multi_structure 0.35937 0.37180     -3.34% [-0.01418, -0.01065]      a       yes    16/16    4/4 3.1e-05
+multi vs none @none_alpha=0.25       ssim_luma 0.41395 0.40977     +1.02% [+0.00299, +0.00543]      a       yes    15/16    4/4 0.00052
+multi vs none @none_alpha=0.25         edge_f1 0.73700 0.73437     +0.36% [-0.00001, +0.00642]      a        no    11/16    4/4    0.21
+multi vs none @none_alpha=0.25   lpips_content 0.28335 0.28542     -0.72% [-0.00286, -0.00122]      a       yes    14/16    4/4  0.0042
+ multi vs none @none_alpha=0.5 multi_structure 0.40338 0.41850     -3.61% [-0.01708, -0.01325]      a       yes    16/16    4/4 3.1e-05
+ multi vs none @none_alpha=0.5       ssim_luma 0.30654 0.30239     +1.37% [+0.00294, +0.00550]      a       yes    15/16    4/4 0.00052
+ multi vs none @none_alpha=0.5         edge_f1 0.66739 0.66471     +0.40% [+0.00123, +0.00445]      a       yes    14/16    4/4  0.0042
+ multi vs none @none_alpha=0.5   lpips_content 0.41935 0.42081     -0.35% [-0.00225, -0.00067]      a       yes    14/16    4/4  0.0042
+multi vs none @none_alpha=0.75 multi_structure 0.45009 0.46710     -3.65% [-0.01918, -0.01515]      a       yes    16/16    4/4 3.1e-05
+multi vs none @none_alpha=0.75       ssim_luma 0.22111 0.21743     +1.71% [+0.00272, +0.00493]      a       yes    16/16    4/4 3.1e-05
+multi vs none @none_alpha=0.75         edge_f1 0.60705 0.60593     +0.19% [+0.00023, +0.00206]      a       yes    13/16    4/4   0.021
+multi vs none @none_alpha=0.75   lpips_content 0.54563 0.54552     +0.02% [-0.00126, +0.00143]      b        no     9/16    1/4     0.8
+
+======================================================================
+## B. 加入 laplacian / combo（所有条件共同覆盖的点）
+======================================================================
+coverage (seed, accepted, possible): (17,190,192), (43,192,192), (101,192,192)
+
+### 匹配后均值（三种子均值 ± 种子间 SD）
+                            pretrained               none             single              multi          laplacian              combo
+multi_structure      0.428099±0.001052  0.418970±0.002664  0.415336±0.002460  0.404124±0.002053  0.407356±0.002310  0.405558±0.002108
+single_structure     0.688465±0.000734  0.687166±0.003096  0.685027±0.003060  0.683286±0.002989  0.684724±0.003145  0.683938±0.003027
+content_feature      1.329837±0.021666  1.306300±0.011819  1.305269±0.011688  1.300234±0.011435  1.297915±0.011684  1.298735±0.011116
+pixel_l1             0.151612±0.001817  0.150663±0.001890  0.150527±0.001978  0.149503±0.002057  0.149114±0.002136  0.149244±0.002045
+pooled_intensity_l1  0.108495±0.002081  0.107628±0.002170  0.107574±0.002253  0.106693±0.002228  0.106077±0.002367  0.106306±0.002223
+ssim_luma            0.308309±0.001894  0.310184±0.003279  0.312111±0.003104  0.314189±0.002694  0.313070±0.002687  0.313828±0.002692
+edge_f1              0.663675±0.001217  0.668559±0.002132  0.668967±0.001950  0.670707±0.001901  0.671925±0.001537  0.671463±0.001549
+lpips_content        0.424367±0.004662  0.416802±0.000775  0.416573±0.000514  0.415660±0.000293  0.414332±0.000067  0.414855±0.000256
+
+### 两两比较（diff = a − b；CI 为交叉 bootstrap；contents/styles = a 更优的内容数/参考数；sign_p 为 16 个内容层面的符号检验）
+        comparison              metric  mean_a  mean_b rel_change          95%CI(diff) better CI_excl_0 contents styles  sign_p
+     multi vs none     multi_structure 0.40412 0.41897     -3.55% [-0.01670, -0.01311]      a       yes    16/16    4/4 3.1e-05
+     multi vs none    single_structure 0.68329 0.68717     -0.57% [-0.00506, -0.00294]      a       yes    16/16    4/4 3.1e-05
+     multi vs none     content_feature 1.30028 1.30635     -0.46% [-0.00923, -0.00251]      a       yes    14/16    4/4  0.0042
+     multi vs none            pixel_l1 0.14950 0.15066     -0.77% [-0.00172, -0.00063]      a       yes    14/16    4/4  0.0042
+     multi vs none pooled_intensity_l1 0.10669 0.10762     -0.87% [-0.00194, -0.00006]      a       yes    10/16    4/4    0.45
+     multi vs none           ssim_luma 0.31419 0.31019     +1.29% [+0.00292, +0.00523]      a       yes    16/16    4/4 3.1e-05
+     multi vs none             edge_f1 0.67070 0.66856     +0.32% [+0.00080, +0.00390]      a       yes    14/16    4/4  0.0042
+     multi vs none       lpips_content 0.41566 0.41680     -0.27% [-0.00194, -0.00039]      a       yes    14/16    4/4  0.0042
+   multi vs single     multi_structure 0.40412 0.41533     -2.70% [-0.01261, -0.00988]      a       yes    16/16    4/4 3.1e-05
+   multi vs single    single_structure 0.68329 0.68503     -0.25% [-0.00244, -0.00112]      a       yes    16/16    4/4 3.1e-05
+   multi vs single     content_feature 1.30028 1.30532     -0.39% [-0.00726, -0.00258]      a       yes    14/16    4/4  0.0042
+   multi vs single            pixel_l1 0.14950 0.15052     -0.68% [-0.00149, -0.00057]      a       yes    14/16    4/4  0.0042
+   multi vs single pooled_intensity_l1 0.10669 0.10757     -0.82% [-0.00166, -0.00017]      a       yes    11/16    4/4    0.21
+   multi vs single           ssim_luma 0.31419 0.31211     +0.67% [+0.00135, +0.00287]      a       yes    15/16    4/4 0.00052
+   multi vs single             edge_f1 0.67070 0.66896     +0.26% [+0.00063, +0.00327]      a       yes    14/16    4/4  0.0042
+   multi vs single       lpips_content 0.41566 0.41657     -0.22% [-0.00156, -0.00027]      a       yes    13/16    4/4   0.021
+    single vs none     multi_structure 0.41533 0.41897     -0.87% [-0.00415, -0.00316]      a       yes    16/16    4/4 3.1e-05
+    single vs none    single_structure 0.68503 0.68717     -0.31% [-0.00265, -0.00172]      a       yes    16/16    4/4 3.1e-05
+    single vs none     content_feature 1.30532 1.30635     -0.08% [-0.00222, +0.00032]      a        no    12/16    3/4   0.077
+    single vs none            pixel_l1 0.15052 0.15066     -0.09% [-0.00025, -0.00002]      a       yes    13/16    4/4   0.021
+    single vs none pooled_intensity_l1 0.10757 0.10762     -0.05% [-0.00028, +0.00013]      a        no     8/16    2/4       1
+    single vs none           ssim_luma 0.31211 0.31019     +0.62% [+0.00152, +0.00240]      a       yes    16/16    4/4 3.1e-05
+    single vs none             edge_f1 0.66896 0.66856     +0.06% [-0.00003, +0.00088]      a        no    11/16    4/4    0.21
+    single vs none       lpips_content 0.41657 0.41680     -0.06% [-0.00047, +0.00003]      a        no    12/16    4/4   0.077
+none vs pretrained     multi_structure 0.41897 0.42810     -2.14% [-0.01246, -0.00599]      a       yes    15/16    4/4 0.00052
+none vs pretrained    single_structure 0.68717 0.68847     -0.19% [-0.00441, +0.00194]      a        no    12/16    3/4   0.077
+none vs pretrained     content_feature 1.30635 1.32977     -1.76% [-0.04949, +0.00131]      a        no    15/16    4/4 0.00052
+none vs pretrained            pixel_l1 0.15066 0.15161     -0.63% [-0.00353, +0.00151]      a        no    11/16    2/4    0.21
+none vs pretrained pooled_intensity_l1 0.10762 0.10849     -0.81% [-0.00429, +0.00253]      a        no    12/16    2/4   0.077
+none vs pretrained           ssim_luma 0.31019 0.30831     +0.62% [-0.00406, +0.00801]      a        no    13/16    3/4   0.021
+none vs pretrained             edge_f1 0.66856 0.66368     +0.73% [+0.00131, +0.00950]      a       yes    13/16    4/4   0.021
+none vs pretrained       lpips_content 0.41680 0.42435     -1.79% [-0.01577, +0.00018]      a        no    14/16    4/4  0.0042
+ laplacian vs none     multi_structure 0.40735 0.41897     -2.77% [-0.01326, -0.01002]      a       yes    16/16    4/4 3.1e-05
+ laplacian vs none    single_structure 0.68473 0.68717     -0.36% [-0.00332, -0.00168]      a       yes    16/16    4/4 3.1e-05
+ laplacian vs none     content_feature 1.29796 1.30635     -0.64% [-0.01257, -0.00441]      a       yes    14/16    4/4  0.0042
+ laplacian vs none            pixel_l1 0.14911 0.15066     -1.03% [-0.00197, -0.00116]      a       yes    16/16    4/4 3.1e-05
+ laplacian vs none pooled_intensity_l1 0.10607 0.10762     -1.44% [-0.00226, -0.00092]      a       yes    15/16    4/4 0.00052
+ laplacian vs none           ssim_luma 0.31307 0.31019     +0.93% [+0.00188, +0.00398]      a       yes    16/16    4/4 3.1e-05
+ laplacian vs none             edge_f1 0.67192 0.66856     +0.50% [+0.00156, +0.00578]      a       yes    13/16    4/4   0.021
+ laplacian vs none       lpips_content 0.41433 0.41680     -0.59% [-0.00351, -0.00157]      a       yes    16/16    4/4 3.1e-05
+multi vs laplacian     multi_structure 0.40412 0.40735     -0.79% [-0.00406, -0.00240]      a       yes    16/16    4/4 3.1e-05
+multi vs laplacian    single_structure 0.68329 0.68473     -0.21% [-0.00194, -0.00096]      a       yes    15/16    4/4 0.00052
+multi vs laplacian     content_feature 1.30028 1.29796     +0.18% [+0.00039, +0.00416]      b       yes     4/16    0/4   0.077
+multi vs laplacian            pixel_l1 0.14950 0.14911     +0.26% [-0.00001, +0.00073]      b        no     3/16    0/4   0.021
+multi vs laplacian pooled_intensity_l1 0.10669 0.10607     +0.58% [+0.00010, +0.00109]      b       yes     4/16    0/4   0.077
+multi vs laplacian           ssim_luma 0.31419 0.31307     +0.36% [+0.00065, +0.00160]      a       yes    14/16    4/4  0.0042
+multi vs laplacian             edge_f1 0.67070 0.67192     -0.18% [-0.00213, -0.00041]      b       yes     3/16    0/4   0.021
+multi vs laplacian       lpips_content 0.41566 0.41433     +0.32% [+0.00083, +0.00184]      b       yes     0/16    0/4 3.1e-05
+     combo vs none     multi_structure 0.40555 0.41897     -3.20% [-0.01511, -0.01178]      a       yes    16/16    4/4 3.1e-05
+     combo vs none    single_structure 0.68394 0.68717     -0.47% [-0.00423, -0.00242]      a       yes    16/16    4/4 3.1e-05
+     combo vs none     content_feature 1.29878 1.30635     -0.58% [-0.01128, -0.00376]      a       yes    15/16    4/4 0.00052
+     combo vs none            pixel_l1 0.14924 0.15066     -0.94% [-0.00184, -0.00101]      a       yes    16/16    4/4 3.1e-05
+     combo vs none pooled_intensity_l1 0.10630 0.10762     -1.22% [-0.00212, -0.00062]      a       yes    13/16    4/4   0.021
+     combo vs none           ssim_luma 0.31383 0.31019     +1.18% [+0.00266, +0.00478]      a       yes    16/16    4/4 3.1e-05
+     combo vs none             edge_f1 0.67146 0.66856     +0.44% [+0.00127, +0.00505]      a       yes    15/16    4/4 0.00052
+     combo vs none       lpips_content 0.41485 0.41680     -0.47% [-0.00281, -0.00121]      a       yes    15/16    4/4 0.00052
+    combo vs multi     multi_structure 0.40555 0.40412     +0.36% [+0.00101, +0.00186]      b       yes     0/16    0/4 3.1e-05
+    combo vs multi    single_structure 0.68394 0.68329     +0.10% [+0.00041, +0.00092]      b       yes     0/16    0/4 3.1e-05
+    combo vs multi     content_feature 1.29878 1.30028     -0.11% [-0.00249, -0.00048]      a       yes    13/16    4/4   0.021
+    combo vs multi            pixel_l1 0.14924 0.14950     -0.17% [-0.00044, -0.00005]      a       yes    13/16    4/4   0.021
+    combo vs multi pooled_intensity_l1 0.10630 0.10669     -0.36% [-0.00064, -0.00011]      a       yes    12/16    4/4   0.077
+    combo vs multi           ssim_luma 0.31383 0.31419     -0.12% [-0.00060, -0.00011]      b       yes     4/16    0/4   0.077
+    combo vs multi             edge_f1 0.67146 0.67070     +0.11% [+0.00018, +0.00137]      a       yes    13/16    4/4   0.021
+    combo vs multi       lpips_content 0.41485 0.41566     -0.19% [-0.00106, -0.00057]      a       yes    16/16    4/4 3.1e-05
+combo vs laplacian     multi_structure 0.40555 0.40735     -0.44% [-0.00221, -0.00139]      a       yes    16/16    4/4 3.1e-05
+combo vs laplacian    single_structure 0.68394 0.68473     -0.11% [-0.00104, -0.00054]      a       yes    15/16    4/4 0.00052
+combo vs laplacian     content_feature 1.29878 1.29796     +0.06% [-0.00014, +0.00174]      b        no     5/16    0/4    0.21
+combo vs laplacian            pixel_l1 0.14924 0.14911     +0.09% [-0.00006, +0.00030]      b        no     3/16    1/4   0.021
+combo vs laplacian pooled_intensity_l1 0.10630 0.10607     +0.22% [-0.00002, +0.00046]      b        no     4/16    0/4   0.077
+combo vs laplacian           ssim_luma 0.31383 0.31307     +0.24% [+0.00052, +0.00101]      a       yes    16/16    4/4 3.1e-05
+combo vs laplacian             edge_f1 0.67146 0.67192     -0.07% [-0.00099, +0.00005]      b        no     5/16    1/4    0.21
+combo vs laplacian       lpips_content 0.41485 0.41433     +0.13% [+0.00024, +0.00080]      b       yes     1/16    0/4 0.00052
+
+### multi vs none 按匹配强度拆分
+                    comparison          metric  mean_a  mean_b rel_change          95%CI(diff) better CI_excl_0 contents styles  sign_p
+multi vs none @none_alpha=0.25 multi_structure 0.35937 0.37180     -3.34% [-0.01418, -0.01065]      a       yes    16/16    4/4 3.1e-05
+multi vs none @none_alpha=0.25       ssim_luma 0.41395 0.40977     +1.02% [+0.00299, +0.00543]      a       yes    15/16    4/4 0.00052
+multi vs none @none_alpha=0.25         edge_f1 0.73700 0.73437     +0.36% [-0.00001, +0.00642]      a        no    11/16    4/4    0.21
+multi vs none @none_alpha=0.25   lpips_content 0.28335 0.28542     -0.72% [-0.00286, -0.00122]      a       yes    14/16    4/4  0.0042
+ multi vs none @none_alpha=0.5 multi_structure 0.40338 0.41850     -3.61% [-0.01708, -0.01325]      a       yes    16/16    4/4 3.1e-05
+ multi vs none @none_alpha=0.5       ssim_luma 0.30654 0.30239     +1.37% [+0.00294, +0.00550]      a       yes    15/16    4/4 0.00052
+ multi vs none @none_alpha=0.5         edge_f1 0.66739 0.66471     +0.40% [+0.00123, +0.00445]      a       yes    14/16    4/4  0.0042
+ multi vs none @none_alpha=0.5   lpips_content 0.41935 0.42081     -0.35% [-0.00225, -0.00067]      a       yes    14/16    4/4  0.0042
+multi vs none @none_alpha=0.75 multi_structure 0.45009 0.46710     -3.65% [-0.01918, -0.01515]      a       yes    16/16    4/4 3.1e-05
+multi vs none @none_alpha=0.75       ssim_luma 0.22111 0.21743     +1.71% [+0.00272, +0.00493]      a       yes    16/16    4/4 3.1e-05
+multi vs none @none_alpha=0.75         edge_f1 0.60705 0.60593     +0.19% [+0.00023, +0.00206]      a       yes    13/16    4/4   0.021
+multi vs none @none_alpha=0.75   lpips_content 0.54563 0.54552     +0.02% [-0.00126, +0.00143]      b        no     9/16    1/4     0.8

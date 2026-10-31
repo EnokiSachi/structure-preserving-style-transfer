@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "review_basis": "Assistant visual review of three supplied contact sheets",
+  "candidate_report_sha256": "8056b80acd4f8d6aee6e5c8d46a383b7929a71a460d0e4c8ad7be40a496a4bd0",
+  "scope": "21 perceptual-hash candidate pairs only",
+  "limitations": [
+    "Not proof that all near duplicates have been found.",
+    "Grouping does not assert identical files or identical artworks."
+  ],
+  "grouping_rule": "Merge connected pairs and all exact-duplicate aliases.",
+  "photo_test_policy": "Keep original test-side images; exclude related train-side images from training and validation.",
+  "decisions": [
+    {
+      "pair_id": 1,
+      "left": "testB/000651.jpg",
+      "right": "trainB/000823.jpg",
+      "left_aliases": [
+        "testB/000651.jpg"
+      ],
+      "right_aliases": [
+        "trainB/000823.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 2,
+      "left": "trainB/000113.jpg",
+      "right": "trainB/000209.jpg",
+      "left_aliases": [
+        "trainB/000113.jpg"
+      ],
+      "right_aliases": [
+        "trainB/000209.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 3,
+      "left": "trainB/000510.jpg",
+      "right": "trainB/000780.jpg",
+      "left_aliases": [
+        "trainB/000510.jpg"
+      ],
+      "right_aliases": [
+        "trainB/000780.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 4,
+      "left": "trainB/001669.jpg",
+      "right": "trainB/001672.jpg",
+      "left_aliases": [
+        "trainB/001669.jpg"
+      ],
+      "right_aliases": [
+        "trainB/001672.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 5,
+      "left": "trainB/001708.jpg",
+      "right": "trainB/002114.jpg",
+      "left_aliases": [
+        "trainB/001708.jpg"
+      ],
+      "right_aliases": [
+        "trainB/002114.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 6,
+      "left": "trainB/002332.jpg",
+      "right": "trainB/000890.jpg",
+      "left_aliases": [
+        "trainB/002332.jpg"
+      ],
+      "right_aliases": [
+        "trainB/000890.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 7,
+      "left": "trainB/003754.jpg",
+      "right": "trainB/005675.jpg",
+      "left_aliases": [
+        "trainB/003754.jpg"
+      ],
+      "right_aliases": [
+        "trainB/005675.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 8,
+      "left": "trainB/004519.jpg",
+      "right": "trainB/004870.jpg",
+      "left_aliases": [
+        "trainB/004519.jpg"
+      ],
+      "right_aliases": [
+        "trainB/004870.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 9,
+      "left": "trainB/004816.jpg",
+      "right": "trainB/000964.jpg",
+      "left_aliases": [
+        "trainB/004816.jpg"
+      ],
+      "right_aliases": [
+        "trainB/000964.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 10,
+      "left": "trainB/005226.jpg",
+      "right": "trainB/004554.jpg",
+      "left_aliases": [
+        "trainB/005226.jpg"
+      ],
+      "right_aliases": [
+        "trainB/004554.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 11,
+      "left": "trainB/005490.jpg",
+      "right": "trainB/002499.jpg",
+      "left_aliases": [
+        "trainB/005490.jpg"
+      ],
+      "right_aliases": [
+        "trainB/002499.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 12,
+      "left": "trainB/006114.jpg",
+      "right": "trainB/003646.jpg",
+      "left_aliases": [
+        "trainB/006114.jpg"
+      ],
+      "right_aliases": [
+        "trainB/003646.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 13,
+      "left": "trainB/001633.jpg",
+      "right": "trainB/001636.jpg",
+      "left_aliases": [
+        "trainB/001633.jpg"
+      ],
+      "right_aliases": [
+        "trainB/001636.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 14,
+      "left": "trainB/002260.jpg",
+      "right": "testB/000686.jpg",
+      "left_aliases": [
+        "trainB/002260.jpg"
+      ],
+      "right_aliases": [
+        "testB/000686.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 15,
+      "left": "trainB/003256.jpg",
+      "right": "trainB/001045.jpg",
+      "left_aliases": [
+        "trainB/003256.jpg"
+      ],
+      "right_aliases": [
+        "trainB/001045.jpg"
+      ],
+      "category": "visually_near_identical",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 16,
+      "left": "trainB/004493.jpg",
+      "right": "trainB/004557.jpg",
+      "left_aliases": [
+        "trainB/004493.jpg"
+      ],
+      "right_aliases": [
+        "trainB/004557.jpg"
+      ],
+      "category": "color_or_monochrome_variant",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 17,
+      "left": "trainB/003166.jpg",
+      "right": "trainB/003270.jpg",
+      "left_aliases": [
+        "trainB/003166.jpg"
+      ],
+      "right_aliases": [
+        "trainB/003270.jpg"
+      ],
+      "category": "color_or_monochrome_variant",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 18,
+      "left": "trainB/005511.jpg",
+      "right": "trainB/005552.jpg",
+      "left_aliases": [
+        "trainB/005511.jpg"
+      ],
+      "right_aliases": [
+        "trainB/005552.jpg"
+      ],
+      "category": "closely_related_scene",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 19,
+      "left": "testA/000359.jpg",
+      "right": "testA/000355.jpg",
+      "left_aliases": [
+        "testA/000359.jpg",
+        "trainA/000359.jpg"
+      ],
+      "right_aliases": [
+        "testA/000355.jpg",
+        "trainA/000355.jpg"
+      ],
+      "category": "similar_artwork_composition_uncertain_identity",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 20,
+      "left": "trainB/001708.jpg",
+      "right": "testB/000598.jpg",
+      "left_aliases": [
+        "trainB/001708.jpg"
+      ],
+      "right_aliases": [
+        "testB/000598.jpg"
+      ],
+      "category": "related_arch_scene_variant",
+      "decision": "keep_in_same_split_group"
+    },
+    {
+      "pair_id": 21,
+      "left": "trainB/002114.jpg",
+      "right": "testB/000598.jpg",
+      "left_aliases": [
+        "trainB/002114.jpg"
+      ],
+      "right_aliases": [
+        "testB/000598.jpg"
+      ],
+      "category": "related_arch_scene_variant",
+      "decision": "keep_in_same_split_group"
+    }
+  ]
+}

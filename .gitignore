@@ -1,0 +1,17 @@
+# Weights and checkpoints (regenerate or download; see THIRD_PARTY_NOTICES.md)
+*.pt
+*.pth
+*.ckpt
+.cache/
+# Data
+data/
+datasets/
+# Python / env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+# OS
+.DS_Store
+Thumbs.db

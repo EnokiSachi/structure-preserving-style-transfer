@@ -1,0 +1,103 @@
+{
+  "purpose": "one-shot held-out test evaluation; protocol fixed before running",
+  "created": "2026-11-01T00:44:53",
+  "reruns_before_this": 0,
+  "arms": [
+    "pretrained",
+    "none",
+    "single",
+    "multi",
+    "laplacian",
+    "combo"
+  ],
+  "seeds": [
+    17,
+    43,
+    101
+  ],
+  "test_contents": [
+    72,
+    278,
+    154,
+    196,
+    631,
+    520,
+    513,
+    239,
+    487,
+    401,
+    98,
+    467,
+    22,
+    118,
+    714,
+    549,
+    164,
+    299,
+    224,
+    418,
+    145,
+    670,
+    715,
+    553,
+    48,
+    204,
+    254,
+    450,
+    552,
+    659,
+    408,
+    427
+  ],
+  "test_styles": [
+    22,
+    25,
+    36,
+    14,
+    34,
+    30,
+    11,
+    24
+  ],
+  "selection": "choose() from run_adain_confirm_worker.py; labels 'test' (32) / 'test_styles' (8)",
+  "alphas": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "metrics": {
+    "independent": [
+      "ssim_luma",
+      "edge_f1",
+      "lpips_content"
+    ],
+    "canny": {
+      "sigma": 1.5,
+      "low_threshold": 0.1,
+      "high_threshold": 0.2
+    },
+    "edge_tol": 2,
+    "lpips": "alex"
+  },
+  "analysis": "match at none-arm style error (alpha .25/.5/.75), summarize_adain_confirmation interpolation; crossed content x reference bootstrap (10000), content-level sign test",
+  "checkpoints_sha256": {
+    "none/seed_17": "55a83bfcdb0b4f6adedd5c879198e008f7da95def7cd5ec32262e04a00f45823",
+    "none/seed_43": "84ae4be03585258ad2ebad127ef9d56f9b58b01503c468a48d6dd15cd694a670",
+    "none/seed_101": "c1649d13baefe09946ed7e2f037bb630eff2816f5b40c2036433eebe03c7b0e9",
+    "single/seed_17": "7fb9132480566769f77ef2f6b17766b58eb0374023552692f96f725fa95d4c73",
+    "single/seed_43": "f0cd5f88ff99f0de443a2f858d2504a03e213c091bf831c5869cb1987a5865ae",
+    "single/seed_101": "9b05e3d568393481e5968bdbc562279044e407c1a4626f93071d63f9db68576f",
+    "multi/seed_17": "d9b69ce1b614dd23c0d963324aea707eb9689598781d7e7220dcab1511e2d9f4",
+    "multi/seed_43": "66b9dbe5ec4af43597cb8578f8ae5c6ddccf46d19b457960602c353a8c7dc980",
+    "multi/seed_101": "f4dba8eabe8a7079c4ab9781a3ff797ddbf858abe13aabb8588122cddeff6991",
+    "laplacian/seed_17": "b3482fd7c641b0061f7a7014f2362ba40b01269498966c33b7adff60d61d3af8",
+    "laplacian/seed_43": "3277d1b0c74892a5315515da014c769f6b8129f26ba5287cbfd33cbae6fdca2b",
+    "laplacian/seed_101": "b24a5a941f621bb6519e91f5d393ba8f377bccae972e62489d4c5d35cd16af45",
+    "combo/seed_17": "450fef28e8d4b32807d36b216179c09de12be9cc59cdda066c41d46395b0bf18",
+    "combo/seed_43": "84460bedb1f5d809c824abb2c5d523fccfb0df7713ba40d58f6cf724983620f8",
+    "combo/seed_101": "99fafea48093df1a05824a39d235b426ddd5e91b24de9621b95a5e380e3fe225"
+  },
+  "pretrained_decoder_sha256": "379ca41d59f3a37eed3599bbbc2560c19da5c458870a5ffd3a9dd41aa88f9472"
+}

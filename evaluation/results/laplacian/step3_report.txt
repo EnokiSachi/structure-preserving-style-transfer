@@ -1,0 +1,7 @@
+# Step 3 报告：Laplacian 基线
+device=cuda  pools=[4, 16]
+lambda (auto, magnitude-matched) = 4.0265   [mean L_multi=0.535947, mean L_lap=0.133105 on 32 train pairs, pretrained decoder]
+seed 17: steps=500 final(content=1.7731, style=0.3904, lap=0.175462)  rows=320  30s
+seed 43: steps=500 final(content=1.8641, style=0.4119, lap=0.158025)  rows=320  31s
+seed 101: steps=500 final(content=1.6878, style=0.2230, lap=0.117000)  rows=320  33s
+total time: 112s

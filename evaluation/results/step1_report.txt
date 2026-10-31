@@ -1,0 +1,47 @@
+# Step 1 报告：独立指标评估与原指标复现自检
+device=cuda  lpips=on  canny={'sigma': 1.5, 'low_threshold': 0.1, 'high_threshold': 0.2}  edge_tol=2px
+seeds=[17, 43, 101]  arms=['pretrained', 'none', 'single', 'multi']
+
+seed 17 pretrained rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  11s
+seed 17 none       rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  11s
+seed 17 single     rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  11s
+seed 17 multi      rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  11s
+figure: gt_upgrade\results\figures\arms_alpha075_seed17.png  (前 4 个验证内容，未挑选)
+seed 43 pretrained rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 43 none       rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 43 single     rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 43 multi      rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 101 pretrained rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 101 none       rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 101 single     rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+seed 101 multi      rows=320 matched=320 pass=320/320 missing=0 worst_rel_diff=style:0.0e+00, content_feature:0.0e+00, pixel_l1:0.0e+00, single_structure:0.0e+00, multi_structure:0.0e+00  [OK]  12s
+
+## 各条件、各强度的独立指标均值（未做风格误差匹配，仅作概览）
+                   style  multi_structure  ssim_luma  edge_f1  lpips_content
+alpha arm                                                                   
+0.00  multi       6.0031           0.3386     0.4791   0.7680         0.2049
+      none        6.0179           0.3485     0.4757   0.7678         0.2064
+      pretrained  6.0535           0.3499     0.4765   0.7691         0.1978
+      single      6.0219           0.3455     0.4775   0.7686         0.2058
+0.25  multi       4.0692           0.3592     0.4141   0.7372         0.2831
+      none        4.0693           0.3718     0.4098   0.7344         0.2854
+      pretrained  4.1563           0.3729     0.4160   0.7378         0.2733
+      single      4.0767           0.3683     0.4122   0.7353         0.2843
+0.50  multi       2.1220           0.4029     0.3074   0.6680         0.4183
+      none        2.1132           0.4185     0.3024   0.6647         0.4208
+      pretrained  2.2086           0.4223     0.3100   0.6636         0.4166
+      single      2.1192           0.4145     0.3050   0.6656         0.4199
+0.75  multi       0.8309           0.4488     0.2232   0.6087         0.5419
+      none        0.8239           0.4668     0.2183   0.6068         0.5440
+      pretrained  0.8980           0.4741     0.2223   0.6063         0.5428
+      single      0.8266           0.4625     0.2205   0.6072         0.5433
+1.00  multi       0.4170           0.4885     0.1734   0.5735         0.6451
+      none        0.4145           0.5077     0.1694   0.5727         0.6465
+      pretrained  0.4228           0.5166     0.1704   0.5720         0.6438
+      single      0.4149           0.5033     0.1711   0.5726         0.6459
+
+content edge density (mean): 0.0949
+
+## 自检结论
+全部一致：可以继续 Step 2。
+total time: 158s
