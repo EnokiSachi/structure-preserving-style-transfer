@@ -1,125 +1,136 @@
-# Structure-Preserving Controllable Style Transfer: A Controlled Evaluation Study
+# Structure-preserving style transfer: does it actually help?
 
-How much does an explicit structure constraint help reference-based style transfer, and does the answer depend on how you measure it?
+This repo looks at how much an explicit structure loss helps reference-based style transfer, and whether the answer changes depending on how you measure it. The main claims were fixed in a protocol file before I ran the held-out test set, and the test was run once.
 
-This repository fine-tunes a pretrained **AdaIN** decoder under different structure constraints. Each constraint is compared **at matched style strength** on held-out metrics, and every claim is confirmed with a **pre-registered, one-shot test-set evaluation**.
+![test examples](evaluation/results/test/figures/test_arms_alpha075.png)
 
-<p align="center">
-  <img src="evaluation/results/test/figures/test_arms_alpha075.png" width="100%"><br>
-  <em>Test set, first four test contents (not cherry-picked), α = 0.75. Columns: content, reference, then each training condition.</em>
-</p>
+Test set, the first four test content images (not hand-picked), style strength alpha = 0.75. Columns are the content image, the reference painting, and then one column per training condition.
 
-## Key findings
+## Motivation
 
-1. **Structure constraints genuinely help, and not only on the metric they optimize.** At matched style error, the multiscale constraint improves three metrics never used in training: SSIM, edge-F1 and LPIPS. The 95% confidence intervals exclude zero, and the direction is consistent across 8/8 held-out reference paintings.
-2. **No single structural prior dominates.** The gradient-pyramid loss is best on structural similarity (SSIM). A Laplacian loss ([Li et al., 2017](#references)) is best on perceptual similarity (LPIPS). A pre-specified hybrid lies between them. The ranking is identical on the validation and test sets.
-3. **Plain fine-tuning does not explain the gain.** Fine-tuning without a structure term does not improve test-set SSIM over the pretrained decoder; the improvement comes from the structure constraint itself.
-4. **Training-aligned metrics overstate the advantage.** The multiscale loss lowers its own structure error by 3.6%, but its gains on independent metrics are 0.3–1.3%.
+Style transfer models tend to wash out the structure of the content image (edges, object outlines, layout) as the style gets stronger. A common fix is to add a structure term to the loss. The problem is how these fixes usually get evaluated:
 
-## Method
+- Models are compared at the same style-strength setting, but a model that simply stylizes less will look better on structure at any fixed setting.
+- Results are often reported on the same structure metric the model was trained to minimize.
 
-- **Backbone:** pretrained AdaIN ([Huang & Belongie, 2017](#references)), using the [pytorch-AdaIN](https://github.com/naoto0804/pytorch-AdaIN) port. The VGG encoder is frozen and only the decoder is fine-tuned.
-- **Strength control:** feature-space interpolation `f_α = (1 − α)·f_c + α·AdaIN(f_c, f_s)` before decoding, not pixel blending.
-- **Multiscale structure loss:** signed Sobel gradients of luminance, normalized by magnitude, compared on a 3-level Gaussian pyramid with edge-aware weighting. Scale weights are 0.2 / 0.3 / 0.5 from fine to coarse.
-- **Objective:** `L = L_content + 10·L_style + L_structure`. The training budget is identical for every condition (500 Adam updates, lr 1e-5).
+I wanted to know how much a structure loss helps once both of these are controlled for, and how different kinds of structure loss compare.
+
+## What I did
+
+- Backbone: a pretrained AdaIN model (Huang & Belongie, 2017), using the [pytorch-AdaIN](https://github.com/naoto0804/pytorch-AdaIN) port. The VGG encoder stays frozen and only the decoder is fine-tuned.
+- Strength control: I interpolate in feature space before decoding, f = (1 - alpha) * f_content + alpha * AdaIN(f_content, f_style), instead of blending pixels.
+- My structure loss: signed Sobel gradients of the luminance, normalized by their magnitude and compared on a 3-level Gaussian pyramid, with more weight on edges. Scale weights are 0.2, 0.3 and 0.5 from fine to coarse.
+- Training: loss = content + 10 x style + structure, 500 Adam steps at lr 1e-5. Every condition gets exactly the same budget, starts from the same weights, and sees the same training pairs.
+
+The six conditions:
 
 | Condition | Structure term |
 |---|---|
-| `pretrained` | none (untouched pretrained decoder) |
-| `none` | fine-tuned, no structure term |
-| `single` | normalized Sobel loss, full resolution only |
-| `multi` | normalized Sobel loss on a 3-level Gaussian pyramid |
-| `laplacian` | Laplacian loss on 4×4 and 16×16 pooled images ([Li et al., 2017](#references)); weight magnitude-matched to `multi` |
-| `combo` | 0.5 × multi + 0.5 × laplacian (fixed in advance, not tuned) |
+| pretrained | none, the original decoder |
+| none | fine-tuned with no structure term |
+| single | Sobel loss at full resolution only |
+| multi | Sobel loss on the 3-level pyramid |
+| laplacian | Laplacian loss on 4x4 and 16x16 pooled images (Li et al., 2017), weight set so its size matches multi |
+| combo | half multi, half laplacian, fixed in advance and not tuned |
 
-## Evaluation protocol
+## How I evaluated it
 
-- **Matched style error.** Comparing at equal α rewards models that simply stylize less. For each content–reference pair, each condition's metric curve is interpolated at the style error the `none` condition reaches at α = 0.25 / 0.5 / 0.75. Points are kept only where every condition's style error is monotone and overlapping, with no extrapolation.
-- **Held-out metrics** (computed against the content image, never used in training): SSIM on luminance, Canny edge-F1 with 2 px tolerance, and LPIPS (AlexNet).
-- **Statistics.** Pairs share content images and reference images, so they are not independent. Confidence intervals use a **crossed bootstrap** that resamples contents and references separately (10,000 draws). Sign tests are run at the content level.
-- **Seeds.** Three training schedules (17, 43, 101), all starting from identical pretrained weights.
-- **Reproducibility check.** The evaluation pipeline reproduces the original experiment's 3,840 per-pair records bit-exactly. The baseline training loop reproduces saved training losses to within 4×10⁻⁴.
-- **Pre-registered test set.** 32 contents × 8 references (256 pairs) drawn from a split never used for model selection. The selection rule, all 16 model hashes (15 fine-tuned decoders + the pretrained decoder) and the analysis plan were written to [`PROTOCOL.json`](evaluation/results/test/PROTOCOL.json) before running. The evaluation was run once.
+- Matched style strength. For every content/reference pair, I interpolate each model's metric curve at the style error that the "none" model reaches at alpha = 0.25, 0.5 and 0.75. That way every model is compared at the same amount of stylization. Points are only kept where all curves overlap, and nothing is extrapolated.
+- Metrics that were not used in training, all computed against the content image: SSIM on luminance, Canny edge F1 with 2 px tolerance, and LPIPS (AlexNet).
+- Statistics. Many pairs share the same content image or the same reference painting, so they are not independent samples. I use a crossed bootstrap that resamples content images and references separately (10,000 draws), and sign tests at the content-image level.
+- Three training runs (seeds 17, 43, 101), all starting from the same pretrained weights.
+- Sanity checks. The evaluation code reproduces all 3,840 per-pair numbers from the original experiment exactly, and the training loop for the new baselines reproduces the saved training losses to within 4e-4.
+- Held-out test. 32 content images x 8 reference paintings (256 pairs) from a split never used for any decision. The selection rule, the hashes of all 16 models and the analysis plan were written to [PROTOCOL.json](evaluation/results/test/PROTOCOL.json) before the run.
 
-## Results (test set, matched style error)
+## Results
 
-Mean over 3 seeds; 2,292 of 2,304 candidate points retained.
+Test set, compared at matched style error, averaged over 3 seeds (2,292 of 2,304 points kept). Lower is better for structure error and LPIPS, higher is better for SSIM and edge F1.
 
-| Condition | Multiscale struct. err ↓ | SSIM ↑ | Edge-F1 ↑ | LPIPS ↓ |
+| Condition | Structure error | SSIM | Edge F1 | LPIPS |
 |---|---:|---:|---:|---:|
 | pretrained | 0.4404 | 0.3386 | 0.6286 | 0.4104 |
 | none | 0.4360 | 0.3367 | 0.6303 | 0.4054 |
 | single | 0.4323 | 0.3386 | 0.6309 | 0.4053 |
-| **multi** | **0.4202** | **0.3410** | 0.6330 | 0.4042 |
-| **laplacian** | 0.4233 | 0.3396 | **0.6337** | **0.4030** |
+| multi | 0.4202 | 0.3410 | 0.6330 | 0.4042 |
+| laplacian | 0.4233 | 0.3396 | 0.6337 | 0.4030 |
 | combo | 0.4216 | 0.3405 | 0.6336 | 0.4035 |
 
-Relative change vs. `none` on the held-out metrics (test set). Every listed change has a 95% crossed-bootstrap CI excluding zero, except where marked.
+Change compared with "none" on the three held-out metrics. All of these have 95% bootstrap intervals that exclude zero, except the one marked n.s.
 
-| Condition | SSIM | Edge-F1 | LPIPS |
+| Condition | SSIM | Edge F1 | LPIPS |
 |---|---:|---:|---:|
-| single | +0.58% | +0.08% | −0.03% (n.s.) |
-| multi | **+1.28%** | +0.43% | −0.30% |
-| laplacian | +0.87% | **+0.53%** | **−0.60%** |
-| combo | +1.13% | +0.51% | −0.47% |
+| single | +0.58% | +0.08% | -0.03% (n.s.) |
+| multi | +1.28% | +0.43% | -0.30% |
+| laplacian | +0.87% | +0.53% | -0.60% |
+| combo | +1.13% | +0.51% | -0.47% |
 
-The validation set (16 × 4 pairs) gives the same ranking and nearly identical effect sizes (multi vs. none: SSIM +1.29%, edge-F1 +0.32%, LPIPS −0.27%). Full tables: [`evaluation/results/step2_summary.txt`](evaluation/results/step2_summary.txt) (validation) and [`evaluation/results/test/test_summary.txt`](evaluation/results/test/test_summary.txt) (test).
+The validation set (16 x 4 pairs) gives the same ranking and almost the same effect sizes. For example, multi vs. none there is +1.29% SSIM, +0.32% edge F1 and -0.27% LPIPS. Full tables are in `evaluation/results/step2_summary.txt` (validation) and `evaluation/results/test/test_summary.txt` (test).
 
-## Reproducing
+### What I take from this
+
+1. The structure loss does help, and not only on the metric it was trained on. At matched style strength, multi improves SSIM, edge F1 and LPIPS, and the direction holds for all 8 held-out reference paintings.
+2. No single structure loss wins everywhere. My gradient-pyramid loss is best on SSIM, the Laplacian loss is best on LPIPS, and the 50/50 combination lands in between. The ranking is the same on validation and test.
+3. The gain comes from the structure term, not from extra fine-tuning. Fine-tuning without any structure term does not improve SSIM over the pretrained decoder on the test set.
+4. Measuring on the training metric overstates the effect. Multi lowers its own structure error by 3.6%, but improves the independent metrics by only 0.3% to 1.3%.
+
+## Running it
 
 ```bash
 pip install -r requirements.txt
 
-# 1. Data: vangogh2photo from the CycleGAN repository, extracted so that
-#    <DATA>/trainA, trainB, testA, testB exist.
-#    See https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix
-#    The split and duplicate review used here are in configs/vangogh_split_v1.json.
+# data: vangogh2photo from the CycleGAN repo (https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix),
+# unpacked so that <DATA>/trainA, trainB, testA, testB exist.
+# The split and duplicate review I used are in configs/vangogh_split_v1.json.
 export STYLIZATION_DATA_ROOT=/path/to/vangogh2photo
 
-# 2. Download and hash-verify the upstream AdaIN code and weights
+# download the upstream AdaIN code and weights and check their hashes
 python scripts/qualify_adain.py --data-root $STYLIZATION_DATA_ROOT
 
-# 3. Original three-seed experiment (pretrained / none / single / multi)
+# original three-seed experiment (pretrained / none / single / multi)
 python scripts/run_adain_confirmation.py --data-root $STYLIZATION_DATA_ROOT --output outputs/my_run
 
-# 4. Held-out metrics, baselines and the pre-registered test evaluation
+# held-out metrics, extra baselines, and the one-time test
 python evaluation/step1_independent_eval.py
-python evaluation/step3_laplacian.py                 # Laplacian baseline
-python evaluation/step3_laplacian.py --mode combo    # hybrid
+python evaluation/step3_laplacian.py                 # laplacian baseline
+python evaluation/step3_laplacian.py --mode combo    # combo
 python evaluation/step2_analyze.py                   # validation analysis
-python evaluation/step4_test_eval.py                 # one-shot test evaluation
+python evaluation/step4_test_eval.py                 # held-out test, runs once
 ```
 
-The evaluation scripts read the original experiment from `outputs/adain_confirmation_v1/`. Per-pair metrics, training logs and plans for that experiment are included, so `step2_analyze.py` can be re-run without a GPU.
+The evaluation scripts read the original experiment from `outputs/adain_confirmation_v1/`. The per-pair metrics, training logs and plans from that run are included, so `step2_analyze.py` can be re-run without a GPU.
 
-## Repository layout
+## Layout
 
 ```
 scripts/                       training, original analysis, inference, demo
   adain_structure_research.py  single- and multiscale structure losses
-  run_adain_confirm_worker.py  per-seed training + validation evaluation
-src/stylization/               data loading (manifest-based split)
-configs/                       data split manifest, release config
+  run_adain_confirm_worker.py  per-seed training and validation evaluation
+src/stylization/               data loading
+configs/                       data split, release config
 outputs/adain_confirmation_v1/ original experiment: plans, logs, per-pair metrics
 evaluation/                    held-out metrics, baselines, test evaluation
-  results/                     all summaries, per-pair CSVs, test protocol
+  results/                     summaries, per-pair CSVs, test protocol
 ```
 
 ## Limitations
 
-- Small evaluation: 3 training schedules, one artistic domain (Van Gogh), 256 × 256 resolution.
-- Effect sizes are small (0.3–1.3% on held-out metrics). They are statistically consistent, but no human preference study was run.
-- SSIM and edge-F1 are independent of the training objective but conceptually close to it. LPIPS is the most independent metric, and there the Laplacian baseline is best.
-- The Laplacian weight was magnitude-matched rather than tuned; a tuned baseline could perform differently.
-- Overlap between the upstream AdaIN pretraining data and this dataset is unknown.
+- Small study: 3 training runs, one art style (Van Gogh), 256 x 256 images.
+- The effects are small (0.3% to 1.3% on the held-out metrics). They are consistent, but I did not run a human preference study.
+- SSIM and edge F1 were not used in training, but they measure something close to what the structure loss targets. LPIPS is the most independent of the three, and there the Laplacian loss is best.
+- The Laplacian weight was matched in size to my loss rather than tuned, so a tuned Laplacian baseline might do better.
+- I don't know how much the AdaIN pretraining data overlaps with this dataset.
 
 ## References
 
-- X. Huang, S. Belongie. *Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization.* ICCV 2017.
-- S. Li, X. Xu, L. Nie, T.-S. Chua. *Laplacian-Steered Neural Style Transfer.* ACM Multimedia 2017.
-- J.-Y. Zhu, T. Park, P. Isola, A. A. Efros. *Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks.* ICCV 2017 (vangogh2photo dataset).
-- N. Inoue. *pytorch-AdaIN.* https://github.com/naoto0804/pytorch-AdaIN
+- Huang and Belongie, Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization, ICCV 2017.
+- Li, Xu, Nie and Chua, Laplacian-Steered Neural Style Transfer, ACM Multimedia 2017.
+- Zhu, Park, Isola and Efros, Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks, ICCV 2017 (vangogh2photo dataset).
+- Inoue, pytorch-AdaIN, https://github.com/naoto0804/pytorch-AdaIN
 
 ## License
 
-Code in this repository: MIT (see [`LICENSE`](LICENSE)). The upstream AdaIN port, its weights and the dataset images are subject to their own terms; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+My code is MIT licensed (see LICENSE). The AdaIN port, its weights and the dataset images have their own terms, see THIRD_PARTY_NOTICES.md.
+
+## Note
+
+I wrote the code with help from an AI coding assistant. I ran all the experiments on my own machine and I'm responsible for the results and how they're interpreted.
